@@ -90,7 +90,9 @@ class ReleaseValidationTests(unittest.TestCase):
         commit = "a" * 40
 
         def fake_run(*args, **kwargs):
-            if args[:3] == ("gh", "api", "repos/owner/repo/releases/tags/v1.2.3"):
+            if args[:3] == ("gh", "release", "view"):
+                return '{"databaseId":123}'
+            if args[:3] == ("gh", "api", "repos/owner/repo/releases/123"):
                 paths = (archive, archive.with_suffix(".zip.sha256"))
                 assets = [{"name": path.name, "size": path.stat().st_size,
                            "digest": "sha256:" + (hashlib.sha256(path.read_bytes()).hexdigest() if digest_ok else "0" * 64)}
@@ -128,6 +130,8 @@ class ReleaseValidationTests(unittest.TestCase):
         calls = self.publish(True)
         self.assertTrue(any(args[:3] == ("gh", "release", "edit") and "--draft=false" in args for args in calls))
         self.assertTrue(any(args[0] == "git" and "--atomic" in args and "push" in args for args in calls))
+        self.assertTrue(any(args[:3] == ("gh", "api", "repos/owner/repo/releases/123") for args in calls))
+        self.assertFalse(any(args[:2] == ("gh", "api") and "/releases/tags/" in args[2] for args in calls))
 
 
 if __name__ == "__main__":

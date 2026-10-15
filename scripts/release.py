@@ -103,6 +103,36 @@ def verify_package(archive: Path) -> None:
                 raise ValueError(f"Package checksum mismatch: {name}")
 
 
+def publish_release(gh: str, repo: str, tag: str, version: str, notes: Path,
+                    archive: Path, checksum: Path, exists: bool) -> None:
+    # GitHub's REST tag lookup excludes drafts. Resolve the draft through CLI's
+    # GraphQL lookup, then read its assets by stable numeric release ID.
+    if not exists:
+        run(gh, "release", "create", tag, "--repo", repo, "--verify-tag", "--draft",
+            "--title", f"Cash Bricks {version}", "--notes-file", str(notes))
+    identity = json.loads(run(gh, "release", "view", tag, "--repo", repo, "--json", "databaseId", capture=True))
+    release_id = identity["databaseId"]
+    if not isinstance(release_id, int) or release_id <= 0:
+        raise ValueError("GitHub did not return a valid release ID.")
+    endpoint = f"repos/{repo}/releases/{release_id}"
+    release = json.loads(run(gh, "api", endpoint, capture=True))
+    assets = {asset["name"]: asset for asset in release["assets"]}
+    for path in (archive, checksum):
+        digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        asset = assets.get(path.name)
+        if asset is None:
+            if not release["draft"]:
+                raise ValueError("A published release is missing assets; refusing to change it.")
+            run(gh, "release", "upload", tag, str(path), "--repo", repo)
+            updated = json.loads(run(gh, "api", endpoint, capture=True))
+            asset = next(item for item in updated["assets"] if item["name"] == path.name)
+        if asset.get("digest") != digest or asset["size"] != path.stat().st_size:
+            raise ValueError(f"Remote checksum/size differs for {path.name}; publishing stopped.")
+    if release["draft"]:
+        run(gh, "release", "edit", tag, "--repo", repo, "--draft=false", "--latest")
+    print(f"Published and verified https://github.com/{repo}/releases/tag/{tag}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="Validate version/notes without building, authentication, or publishing")
@@ -155,25 +185,7 @@ def main() -> None:
 
     # A draft can be resumed after interrupted uploads. Never replace an
     # existing published asset or make a release visible before verification.
-    if existing is None:
-        run(gh, "release", "create", tag, "--repo", repo, "--verify-tag", "--draft",
-            "--title", f"Cash Bricks {version}", "--notes-file", str(notes))
-    release = json.loads(run(gh, "api", f"repos/{repo}/releases/tags/{tag}", capture=True))
-    assets = {asset["name"]: asset for asset in release["assets"]}
-    for path in (archive, checksum):
-        digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
-        asset = assets.get(path.name)
-        if asset is None:
-            if not release["draft"]:
-                raise ValueError("A published release is missing assets; refusing to change it.")
-            run(gh, "release", "upload", tag, str(path), "--repo", repo)
-            updated = json.loads(run(gh, "api", f"repos/{repo}/releases/tags/{tag}", capture=True))
-            asset = next(item for item in updated["assets"] if item["name"] == path.name)
-        if asset.get("digest") != digest or asset["size"] != path.stat().st_size:
-            raise ValueError(f"Remote checksum/size differs for {path.name}; release remains unmodified.")
-    if release["draft"]:
-        run(gh, "release", "edit", tag, "--repo", repo, "--draft=false", "--latest")
-    print(f"Published and verified https://github.com/{repo}/releases/tag/{tag}")
+    publish_release(gh, repo, tag, version, notes, archive, checksum, existing is not None)
 
 
 if __name__ == "__main__":
