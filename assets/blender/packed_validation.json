@@ -1,0 +1,47 @@
+{
+  "vertices": 288,
+  "triangles": 528,
+  "materials": 1,
+  "removed_separate_packet_count": 6,
+  "contiguous_body_count": 1,
+  "body_height_m": 0.04365,
+  "body_internal_horizontal_faces": 0,
+  "body_air_gap_m": 0,
+  "paper_line_pitch_m": 0.0014208984375,
+  "retained_top_sheet_count": 3,
+  "top_sheet_thickness_m": 0.0003,
+  "body_corner_bevel_m": 0.00012,
+  "retained_approved_vertices": 264,
+  "retained_approved_triangles": 484,
+  "bounds_min_m": [
+    -0.07999999821186066,
+    -1.862645149230957e-09,
+    -0.03814999759197235
+  ],
+  "bounds_max_m": [
+    0.07999999821186066,
+    0.04532500356435776,
+    0.03814999759197235
+  ],
+  "dimensions_m": [
+    0.1599999964237213,
+    0.04532500542700291,
+    0.0762999951839447
+  ],
+  "uv_in_unit_square": true,
+  "all_triangles": true,
+  "nondegenerate_triangles": true,
+  "protected_sha256": {
+    "cashbrick.obj": "02fffb88eae09826945cb54c74b5c46f50ccd28d1589c3880ca5ffed7ccf9baa",
+    "cashbrick_albedo.png": "43f99d6d89f920e4c8799552d3624746ff8dca73ab8f5915ef58ac81656b01ea",
+    "cashbrick_icon.png": "f9dbc9a6de44bf949b4be688fced8c1f2cc20d4cd5ef632df04dfad092fe6bd4",
+    "blender/build_assets.py": "7b1f1793c2e9e1d2ab0a2e301e9201bcebd7ad8494994d903a4f56d7a051e66d",
+    "blender/cashbrick.blend": "984baad6cfe696f81513f3cd102d1ac480010a88f49cf94de459080aee41075a",
+    "blender/cashbrick_preview.png": "cfd726cece7ab9111ad6ffb0b75f9da143c4d73bc95f4700487758c10c6e76fa",
+    "blender/cashstack_preview.png": "c91ecce1160b6a7afe9c481a4cdfc862bd426e8dcb822b6df965caeea2f3c32d",
+    "blender/validation.json": "b78ee77a6255b4d3f4bdce12d17580a796fdf62533d116f91667e298f351faeb",
+    "cashbrick_wrap.obj": "e133e130bc0fae1735a3f410a93f3b493a9fe6ecc6108eba8b8ce8bab9882990",
+    "cashbrick_wrap_albedo.png": "597bb2c77a8ef6f7000073d7adda5e075f8c04ce36535dbb7f7bacb2c6d4b4cc"
+  },
+  "protected_files_preserved": true
+}

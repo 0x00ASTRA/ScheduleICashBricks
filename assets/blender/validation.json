@@ -1,0 +1,31 @@
+{
+  "art_revision": "1.0.7-stylized-cash",
+  "vertices": 408,
+  "triangles": 748,
+  "materials": 1,
+  "bounds_min_m": [
+    -0.07999999821186066,
+    -2.3283064365386963e-10,
+    -0.03814999759197235
+  ],
+  "bounds_max_m": [
+    0.07999999821186066,
+    0.04532500356435776,
+    0.03814999759197235
+  ],
+  "dimensions_m": [
+    0.1599999964237213,
+    0.0453250037971884,
+    0.0762999951839447
+  ],
+  "uv_in_unit_square": true,
+  "all_triangles": true,
+  "albedo_opaque": true,
+  "nondegenerate_triangles": true,
+  "native_art_included": false,
+  "physical_stack_dimensions_m": [
+    0.08799999803304673,
+    0.009065000759437681,
+    0.04196499735116959
+  ]
+}

@@ -1,0 +1,14 @@
+bin/
+obj/
+tools/
+inspection/
+dist/
+*.user
+.agents/
+.aws/
+.codex/
+__pycache__/
+*.pyc
+*.blend1
+CashBrickPOV.png/
+CashStackPOV.png/

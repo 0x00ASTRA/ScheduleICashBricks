@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>CashBricks</AssemblyName>
+    <Version>1.0.12</Version>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GameDir Condition="'$(GameDir)' == ''">$(HOME)/.local/share/Steam/steamapps/common/Schedule I</GameDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src/**/*.cs" />
+    <Reference Include="MelonLoader"><HintPath>$(GameDir)/MelonLoader/net6/MelonLoader.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(GameDir)/MelonLoader/net6/0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2CppInterop.Runtime"><HintPath>$(GameDir)/MelonLoader/net6/Il2CppInterop.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="$(GameDir)/MelonLoader/Il2CppAssemblies/*.dll"><Private>false</Private></Reference>
+  </ItemGroup>
+  <Target Name="VerifyGameReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(GameDir)/MelonLoader/Il2CppAssemblies/Assembly-CSharp.dll')" Text="Install MelonLoader and launch Schedule I once to generate its assemblies. Set GameDir to that installation." />
+  </Target>
+</Project>
