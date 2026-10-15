@@ -4,6 +4,21 @@ Entries describe behavior at each release. For current instructions, see the
 [gameplay guide](docs/gameplay.md). Since 1.0.12, cash bricks unpack at packaging
 stations; the brick press only packs cash.
 
+## 1.0.13
+
+Updates the packaged brick with one centered white-and-purple `$1000` band,
+dense paper sides, and native bill faces beneath the existing plastic wrap.
+The held brick now follows the native product brick's grip, scale, and viewmodel
+layer. Printed faces and band lettering display in the correct direction, and
+the toolbar icon uses a validated render with a supplied fallback.
+
+Physical pouring stacks now reuse the base game's cash mesh and its original
+paper, bill-face, and blue-and-white band materials. The existing press collider,
+dragging, twenty-piece task, cash values, employee cycles, and packaging-station
+unpacking remain unchanged. Adds native checks for held placement, textures,
+icons, and pouring clones. Includes refreshed documentation renders and the new
+`cashbrick_packed_albedo.png`; install the full ZIP and restart the game.
+
 ## 1.0.12
 
 Moves cash-brick unpacking from the brick press to packaging

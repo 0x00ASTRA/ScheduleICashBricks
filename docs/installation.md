@@ -15,6 +15,7 @@ Mods/CashBricks.dll
 UserData/CashBricks/cashbrick.obj
 UserData/CashBricks/cashbrick_packed.obj
 UserData/CashBricks/cashbrick_albedo.png
+UserData/CashBricks/cashbrick_packed_albedo.png
 UserData/CashBricks/cashbrick_icon.png
 UserData/CashBricks/cashbrick_wrap.obj
 UserData/CashBricks/cashbrick_wrap_albedo.png

@@ -7,7 +7,7 @@ using Il2CppScheduleOne.Storage;
 using MelonLoader;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(CashBricks.Main), "Cash Bricks", "1.0.12", "Astra")]
+[assembly: MelonInfo(typeof(CashBricks.Main), "Cash Bricks", "1.0.13", "Astra")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace CashBricks;
@@ -66,6 +66,7 @@ public sealed class Main : MelonMod
                 return;
 
             int stackLimit = 0;
+            Product_Equippable? heldTemplate = null;
             foreach (var item in Registry.Instance.GetAllItems())
             {
                 var product = item.TryCast<ProductDefinition>();
@@ -79,12 +80,15 @@ public sealed class Main : MelonMod
                     if (sample == null)
                         continue;
                     sample.SetPackaging(packaging);
+                    var candidate = sample.Equippable?.TryCast<Product_Equippable>();
+                    if (candidate == null || candidate.ModelContainer == null) continue;
+                    heldTemplate = candidate;
                     stackLimit = sample.StackLimit;
                     break;
                 }
                 if (stackLimit > 0) break;
             }
-            if (stackLimit <= 0) return; // Never guess the live product stack limit.
+            if (stackLimit <= 0 || heldTemplate == null) return; // Wait for the native brick definition and grip.
 
             if (BrickDefinition == null)
             {
@@ -102,7 +106,7 @@ public sealed class Main : MelonMod
                     definition.BasePurchasePrice = CashRules.DollarsPerBrick;
                     definition.ResellMultiplier = 0f;
                     definition.EquipMode = ItemDefinition.EEquipMode.Legacy;
-                    Visuals.Attach(definition);
+                    Visuals.Attach(definition, heldTemplate);
                     definition.hideFlags |= HideFlags.DontUnloadUnusedAsset;
                     BrickDefinition = definition;
                 }
@@ -122,7 +126,7 @@ public sealed class Main : MelonMod
             if (!Mod.testsRan && Environment.GetCommandLineArgs().Contains("--cashbricks-selftest"))
             {
                 Mod.testsRan = true;
-                try { RuntimeChecks.Run(); }
+                try { RuntimeChecks.Run(heldTemplate); }
                 catch (Exception e) { Mod.LoggerInstance.Error($"Cash Bricks native self-test failed: {e}"); }
             }
         }

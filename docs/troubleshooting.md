@@ -65,4 +65,8 @@ held-prefab activation; 1.0.11 corrected triangle winding and added the compact
 packaged core. Confirm `cashbrick_packed.obj`, both wrapper files, and the
 updated DLL are installed together.
 
+Version 1.0.13 also requires `cashbrick_packed_albedo.png`. It fixes the held
+brick's grip and forward reach, mirrored print, and blank toolbar icon. Install
+the complete ZIP when updating from an earlier release.
+
 For reproducible checks and the native self-test flag, see [testing](testing.md).

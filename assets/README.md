@@ -1,135 +1,103 @@
-# Blender cash assets
+# Cash models and textures
 
-Original procedural fictional currency, authored and rendered in Blender 5.2.0 LTS.
-The 1.0.7 art revision follows the installed game's cash visual language: pale ivory
-paper, a bold charcoal frame, sparse green seals, and an exaggerated cartoon portrait.
-The fictional Hyland teller, lettering, seals, geometry, and atlas are original.
-Native `BankNoteModelTex` was inspected locally as a visual reference only; no game
-textures, mesh data, or extracted reference files are included or required to rebuild.
+[README](../README.md) · [Building](../docs/building.md) · [Testing](../docs/testing.md)
 
-Six lightly beveled paper packets and three loose top sheets give the brick readable
-edges. Two ivory wrappers have simple green marks and no monetary value: the runtime
-uses this asset both for a $1,000 brick and scaled physical $50 pouring stacks.
-The cosmetic note faces say 10; the runtime determines the actual item value.
+The current packaged brick has dense paper sides, three thin top sheets, one
+centered white-and-purple `$1000` band, and a separate plastic shell. Native bill
+faces are read from the installed game at runtime. Pouring stacks use the game's
+`10NoteStack` mesh and original paper, bill-face, and blue-and-white band materials.
+No extracted native mesh, texture atlas, or asset bundle is distributed.
 
-Runtime files:
+## Runtime files
 
-- `cashbrick.obj`: one combined triangulated mesh, 408 positions / 748 triangles,
-  explicit per-corner UVs and flat normals. Ordinary `v`, `vt`, `vn`, `f` records;
-  no MTL dependency. Assign the supplied atlas to one opaque material.
-- `cashbrick_albedo.png`: 1024 × 1024 sRGB RGBA atlas; every pixel opaque.
-- `cashbrick_icon.png`: 256 × 256 RGBA transparent three-quarter Cycles render.
+| File | Purpose |
+| --- | --- |
+| `cashbrick.obj` | Original loose-cash previews at the press and packaging station |
+| `cashbrick_albedo.png` | Original loose atlas; bill-face region replaced at runtime |
+| `cashbrick_packed.obj` | Packaged core: 192 positions, 352 triangles |
+| `cashbrick_packed_albedo.png` | Packaged atlas with the centered purple/white band |
+| `cashbrick_wrap.obj` | Approved folded-film shell, unchanged |
+| `cashbrick_wrap_albedo.png` | Film opacity and crease atlas, unchanged |
+| `cashbrick_wrapped_icon.png` | Packaged toolbar-icon fallback |
+| `cashbrick_icon.png` | Retained original loose icon |
 
-The OBJ uses meters and Unity Y up, is centered in XZ, and rests at Y=0.
-The preexisting runtime envelope is preserved: X ±0.080000, Y 0–0.045325,
-Z ±0.038150. Overall size is 0.160000 × 0.045325 × 0.076300 m (X/Y/Z).
-At runtime scale (0.55, 0.20, 0.55), pouring stacks measure
-0.088000 × 0.009065 × 0.041965 m.
-The Blender mesh uses Z up; export applies `(x,y,z) -> (x,z,-y)`, a proper
-rotation preserving standard OBJ counterclockwise exterior winding. An importer
-must account for Unity's triangle/front-face convention as needed.
+The packaged core keeps its 0.160000 × 0.045325 × 0.076300 m envelope, centered in
+XZ with its base at Y=0. The 41mm-wide band crosses the portrait at X=0 and wraps
+its entire height. There are no gaps in the main paper body. The plastic shell
+extends approximately 1–1.6mm beyond the paper and slightly below its base.
 
-UVs use the ordinary OBJ bottom-left origin and stay in [0,1]. The upper atlas half
-holds the note face; lower left holds cut paper edges; lower right holds the wrapper.
-There is one material with roughness 0.88, metallic 0, and no normal map. The flat
-palette deliberately avoids engraving noise so it remains readable at inventory size.
+Native pouring geometry is fitted inside the existing 0.088000 × 0.009065 ×
+0.041965 m press collider. Only the mesh and renderer materials are reused;
+the press task keeps its native draggable object, rigidbody, and twenty-piece
+completion flow. Visual band labels do not determine cash values.
 
-Editable and reproducible source:
+## Texture and importer contract
 
-- `blender/cashbrick.blend`: mesh with one UV layer, packed atlas, camera, and lights.
-- `blender/build_assets.py`: deterministic geometry, procedural raster artwork,
-  custom OBJ export, Cycles renders, and assertions for the asset contract.
-- `blender/cashbrick_preview.png`: 1024 × 1024 transparent full-brick inspection render.
-- `blender/cashstack_preview.png`: 512 × 512 transparent inspection render at pouring scale.
-- `blender/validation.json`: mesh counts, exact-envelope checks, UV/material checks,
-  nondegenerate triangles, opaque atlas, and scaled dimensions.
+The two paper atlases are 1024 × 1024 sRGB RGBA. Their upper halves contain
+original fictional bill faces as authored placeholders; lower-left quadrants
+contain paper edges, and lower-right quadrants contain band art. At startup,
+`Visuals.ApplyNativeCashFaces` reads the installed `BankNoteModelTex` through a
+GPU blit and replaces only the face region. The native crop and destination UVs
+are recorded in `blender/packed_validation.json`. Paper-edge and band pixels
+remain unchanged. No game textures are required to rebuild the authored assets.
 
-Rebuild from any directory (replace the absolute path if the project moves):
+The OBJ files use meters, Unity Y up, per-corner UVs/normals, and outward triangle
+winding. Export maps Blender coordinates `(x,y,z)` to `(x,z,-y)`. The runtime
+preserves triangle order and reflects printed UVs inside their atlas regions
+to correct the face and band lettering. Native pouring geometry uses its own
+unaltered UVs and materials.
 
-```sh
-ALSOFT_DRIVERS=null blender --background --python /home/astra/Projects/Games/ScheduleICashBricks/assets/blender/build_assets.py
-```
+Paper uses URP/Lit, white tint, metallic 0, and smoothness 0.12. Plastic uses
+URP/Lit transparent with preserved specular, white RGBA tint, metallic 0,
+smoothness 0.70, backface culling, queue 3000, and depth writes off. Its atlas
+provides opacity; multiplying by another translucent tint would hide the film.
+The Standard shader fallback uses equivalent transparent settings. Held meshes
+use the native Viewmodel layer and product-brick grip without casting shadows
+on the world.
 
-Only Blender's bundled Python and NumPy are required. No downloaded art, external
-font, image-generation service, asset bundle, or game installation is needed.
-Blender may report an optional extension-manager warning or a cache-thumbnail write
-warning under restricted permissions; neither prevents the asset files or renders.
-These previews validate the asset appearance; final lighting depends on the game scene.
+The toolbar icon uses the native icon studio when ready and accepts only a
+visible render with a transparent background. The supplied fallback is an
+original-art Blender render, so it can differ from the live native bill faces.
 
-## Packaged cash: separate plastic film (1.0.8)
+## Editable Blender sources
 
-Packaged bricks combine the compact `cashbrick_packed.obj` core with the unchanged
-`cashbrick_albedo.png` artwork and a separate original film shell. Loose notes and $50 pouring stacks keep
-all of the approved 1.0.7 assets and use no film. The packaged icon is separate too.
-
-- `cashbrick_wrap.obj`: closed, triangulated folded-film shell, Unity Y up,
-  one UV atlas and one transparent material; no MTL dependency.
-- `cashbrick_wrap_albedo.png`: 1024 × 1024 straight-alpha sRGB RGBA film atlas.
-  Neutral translucent gray with sparse pale creases, tucked short-end folds,
-  and a narrow underside heat-seal. The central portrait remains unobstructed.
-- `cashbrick_wrapped_icon.png`: 256 × 256 transparent packaged-brick icon.
-- `blender/cashbrick_wrapped.blend`: compact packaged core plus approved film shell,
-  packed images, camera, and lights.
-- `blender/cashbrick_wrapped_preview.png`: 1024 × 1024 inspection render.
-- `blender/wrapped_validation.json`: shell bounds/counts, manifold/UV/triangle
-  checks, core enclosure, material settings, and original-art SHA-256 hashes.
-- `blender/build_wrapped_assets.py`: independent deterministic packaging build.
-  Calls the packaged-core builder, then reads the approved wrapper OBJ/atlas without
-  regenerating them. Verifies that all eight original loose-cash assets plus both
-  wrapper files remain byte-for-byte unchanged. It never runs `build_assets.py`.
-
-The installed game's product `Wrapping` mesh and `brick plastic wrapping mat`
-were inspected read-only. Their broad faceted film shape and transparent material
-informed the original shell. No extracted native geometry, pixels, or normal map
-is shipped or needed to rebuild. The game's material uses gray film at alpha
-approximately 0.204, smoothness 0.70, and preserved specular reflections. Our atlas
-provides its own opacity (mostly 0.20, higher at creases), so use **white RGBA
-material tint (1,1,1,1)**; multiplying by the native alpha again would hide the film.
-
-Runtime film material: URP/Lit transparent, metallic 0, smoothness 0.70,
-backface culling, depth writes off, queue 3000. Preserve specular with
-`_ALPHAPREMULTIPLY_ON` / `_SURFACE_TYPE_TRANSPARENT`, source blend One,
-destination OneMinusSrcAlpha (same factors for alpha), `_Blend=0`,
-`_BlendModePreserveSpecular=1`, `_Surface=1`, `_Cull=2`, `_ZWrite=0`.
-Disable shadow/depth-only passes on the shell. Do not enable alpha clipping.
-The Standard fallback should use its transparent/premultiplied mode, smoothness
-0.70, metallic 0, and the same atlas/tint. No custom shader or normal texture is needed.
-
-The shell extends approximately 1–1.6 millimeters beyond the original cash envelope
-and slightly below its base. Keep the original core at the same local origin;
-use the core's existing collider and placement footprint. See the validation JSON
-for exact bounds. Blender previews approximate the runtime film with preserved
-surface reflection; exact highlights depend on in-game lighting and shader.
-
-Rebuild packaging only:
+Authored with Blender 5.2.0 LTS; only Blender's bundled Python and NumPy are needed.
+Run from the repository root:
 
 ```sh
-ALSOFT_DRIVERS=null blender --background --python /home/astra/Projects/Games/ScheduleICashBricks/assets/blender/build_wrapped_assets.py
+ALSOFT_DRIVERS=null blender --background --python assets/blender/build_wrapped_assets.py
 ```
 
-## Compact packaged paper sides
+This rebuilds the packaged core, band atlas, editable scenes, fallback icon, and
+authored inspection renders. It reads the approved wrapper without rewriting
+it and verifies ten protected original assets byte for byte. Run
+`build_packed_assets.py` with the same command to rebuild only the packaged core.
+`build_assets.py` is the historical loose-asset builder and is not part of the
+packaged rebuild.
 
-`cashbrick_packed.obj` replaces the six thick internal packets with one continuous
-43.65mm paper body. Its sides map continuously to the existing paper-edge atlas:
-approximately 31 subtle printed lines at 1.421mm pitch, with no physical air gaps
-or internal horizontal note faces. A 0.12mm outer bevel catches light without
-creating large shelves. The three approved 0.3mm top sheets and all wrapper-band
-geometry/UVs are copied exactly, preserving the existing portrait and bands.
+The `.blend` files keep packed original artwork. `packed_validation.json`
+records dimensions, retained sheets, band placement, UVs, triangle checks, and
+protected hashes. `wrapped_validation.json` records film enclosure, manifold
+checks, bounds, and material settings. Inspection PNGs under `blender/` show
+the authored fallback artwork.
 
-The core has 288 positions and 528 triangles, one opaque material, and the same
-X ±0.080000, Y 0–0.045325, Z ±0.038150 meter envelope. Only completed packaged
-bricks use this mesh; loose cash continues to use `cashbrick.obj`. The approved
-plastic shell mesh and atlas are reused without any byte changes.
+## README renders
 
-- `blender/build_packed_assets.py`: independently rebuilds the compact core.
-- `blender/cashbrick_packed.blend`: editable compact-core source scene.
-- `blender/packed_validation.json`: bounds, UVs, triangles, dimensions, spacing,
-  retained geometry counts, and protected asset SHA-256 hashes.
-- `blender/cashbrick_packed_sides_preview.png`: low-angle packaged inspection
-  render for comparison with the supplied brick and native wallet-stack screenshots.
+The current model renders live in `docs/images/` and are included in the release
+ZIP so the extracted README displays them. They show native faces and the
+actual pouring mesh; lighting is a Blender approximation of the game. They do
+not use the player's older screenshots.
 
-Run `build_wrapped_assets.py` (command above) to rebuild the packed core and all
-packaged previews/icons together, or run `build_packed_assets.py` with the same
-Blender command to rebuild just the packaged core. Export winding stays standard
-OBJ counterclockwise with outward normals; the runtime must preserve the native
-mesh winding rather than invert every triangle.
+To regenerate them from locally inspected native references:
+
+```sh
+ALSOFT_DRIVERS=null blender --background --python assets/blender/render_readme_previews.py -- \
+  --native-face /tmp/native-BankNoteModelTex.png \
+  --native-band /tmp/native-cash-band-100.png \
+  --native-stack /tmp/native-10NoteStack-mesh.json
+```
+
+The JSON contains `vertices`, `uv`, and `indices` (triangles grouped by submesh).
+The renderer mirrors the runtime fit, face crop, printed-UV correction, and
+material order. It writes only the two finished PNGs; native reference files
+and the composited atlas stay local and are not saved into a Blender scene.

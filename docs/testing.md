@@ -25,7 +25,8 @@ in-game verification; those are not certified by the standalone checks.
 
 Add `--cashbricks-selftest` to the game's launch options. After registration,
 the mod exercises detached native slots, inactive Mk1/Mk2 unpack routing,
-held-prefab clones, and an item JSON round trip. Look for
+held-prefab and native pouring-stack clones, texture compositing, icon visibility,
+and an item JSON round trip. Version 1.0.13 runs 100 checks. Look for
 `SELFTEST COMPLETE` in `MelonLoader/Latest.log`. The checks do not use player
 inventory or saved stations.
 
@@ -54,7 +55,11 @@ flows with the same mod installed on each participant before using multiplayer.
 ## Visuals and compatibility
 
 For the packaged visuals, inspect a held/stored cash brick and its inventory
-icon: the cash should remain visible through glossy folded plastic. Confirm the
+icon: native bill faces and one centered white-and-purple `$1000` band should
+remain visible through glossy folded plastic, with readable lettering. Confirm
+the held model lines up with an ordinary product brick and stays within its
+forward reach. Pouring stacks should match the native cash stack's bill faces,
+paper edges, and blue-and-white band while remaining draggable. Confirm the
 press rejects new cash bricks, while loose cash previews and pouring stacks
 remain unwrapped. Confirm unpacked cash appears at the packaging station and
 ordinary product displays resume after collecting it. If an old save contains

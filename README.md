@@ -2,13 +2,14 @@
 
 A MelonLoader mod for Schedule I's IL2CPP build. Press loose cash into **$1,000
 bricks**, store them like other items, and unpack them at a packaging station.
-Bricks use the game's product-brick stack limit and a custom plastic-wrapped model.
+Bricks use native bill faces, a centered white-and-purple **$1,000** band, and
+plastic wrapping. Pouring stacks use the base game's cash model and materials.
 
 | $1,000 cash brick | Cash stack for pouring |
 | :---: | :---: |
-| <img src="assets/blender/cashbrick_wrapped_preview.png" alt="Plastic-wrapped cash brick with tightly packed bill edges" width="400"> | <img src="assets/blender/cashstack_preview.png" alt="Unwrapped physical cash stack used when pouring into the brick press" width="400"> |
+| <img src="docs/images/cash-brick.png" alt="Plastic-wrapped cash brick with native bill faces and a centered white-and-purple $1000 band" width="400"> | <img src="docs/images/pouring-stack.png" alt="Base-game cash stack with its original bill faces and blue-and-white band" width="400"> |
 
-*Renders of the mod's current models.*
+*Model renders of the current visuals; lighting varies in game.*
 
 ## Install
 

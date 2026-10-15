@@ -66,3 +66,40 @@ report={'core_asset':'cashbrick_packed.obj','core_vertices_inside_shell':core_in
 assert core_inside and report['protected_files_preserved'] and report['closed_manifold'] and report['nondegenerate_triangles']
 (OUT/'blender/wrapped_validation.json').write_text(json.dumps(report,indent=2)+'\n')
 print('WRAPPED_CASH_VALIDATION '+json.dumps(report))
+
+# Optional LOCAL preview of runtime-composited native bill faces. Native pixels
+# stay in /tmp, are never packed into the authored .blend, and never overwrite
+# the distributable fallback atlas, icon, or previews.
+import os
+reference=os.environ.get('CASHBRICKS_NATIVE_FACE_REFERENCE')
+if reference:
+ native=bpy.data.images.load(str(Path(reference).resolve()),check_existing=False)
+ nw,nh=native.size
+ native_pixels=np.empty(nw*nh*4,dtype=np.float32);native.pixels.foreach_get(native_pixels);native_pixels=native_pixels.reshape((nh,nw,4))
+ authored=result['atlas'];sz=1024
+ composed=np.empty(sz*sz*4,dtype=np.float32);authored.pixels.foreach_get(composed);composed=composed.reshape((sz,sz,4))
+ u=np.clip(((np.arange(sz)+.5)/sz-.01)/.98,0,1)
+ v=np.clip(((np.arange(512,sz)+.5)/sz-.51)/.48,0,1)
+ contract=result['native_face_contract'];umin,vmin=contract['source_uv_min'];umax,vmax=contract['source_uv_max']
+ xx=(umin+u*(umax-umin))*(nw-1);yy=(vmin+v*(vmax-vmin))*(nh-1)
+ x0=np.floor(xx).astype(int);x1=np.minimum(x0+1,nw-1);tx=(xx-x0)[None,:,None]
+ y0=np.floor(yy).astype(int);y1=np.minimum(y0+1,nh-1);ty=(yy-y0)[:,None,None]
+ a=native_pixels[y0[:,None],x0[None,:]]*(1-tx)+native_pixels[y0[:,None],x1[None,:]]*tx
+ b=native_pixels[y1[:,None],x0[None,:]]*(1-tx)+native_pixels[y1[:,None],x1[None,:]]*tx
+ composed[512:]=a*(1-ty)+b*ty;composed[:,:,3]=1
+ temp=Path('/tmp/cashbricks-native-packaged-preview');temp.mkdir(parents=True,exist_ok=True)
+ preview_atlas=bpy.data.images.new('LOCAL native-face composite (not packed)',width=sz,height=sz,alpha=True)
+ preview_atlas.colorspace_settings.name='sRGB';preview_atlas.pixels.foreach_set(composed.ravel());preview_atlas.file_format='PNG';preview_atlas.filepath_raw=str(temp/'cashbrick_runtime_atlas.png');preview_atlas.save()
+ for node in core.data.materials[0].node_tree.nodes:
+  if node.type=='TEX_IMAGE':node.image=preview_atlas
+ cam.location=(.22,-.27,.25);cam.data.ortho_scale=.215
+ cam.rotation_euler=(Vector((0,0,.022))-cam.location).to_track_quat('-Z','Y').to_euler()
+ scene.render.resolution_x=256;scene.render.resolution_y=256
+ scene.render.filepath=str(temp/'cashbrick_wrapped_icon.png');bpy.ops.render.render(write_still=True)
+ scene.render.resolution_x=1024;scene.render.resolution_y=1024
+ scene.render.filepath=str(temp/'cashbrick_wrapped_preview.png');bpy.ops.render.render(write_still=True)
+ cam.location=(.20,-.25,.105);cam.data.ortho_scale=.205
+ cam.rotation_euler=(Vector((0,0,.022))-cam.location).to_track_quat('-Z','Y').to_euler()
+ scene.render.filepath=str(temp/'cashbrick_packed_sides_preview.png');bpy.ops.render.render(write_still=True)
+ assert before==hashes()
+ print('LOCAL_NATIVE_FACE_PREVIEWS '+str(temp))

@@ -1,31 +1,79 @@
 {
-  "vertices": 288,
-  "triangles": 528,
+  "vertices": 192,
+  "triangles": 352,
   "materials": 1,
-  "removed_separate_packet_count": 6,
-  "contiguous_body_count": 1,
-  "body_height_m": 0.04365,
-  "body_internal_horizontal_faces": 0,
-  "body_air_gap_m": 0,
+  "albedo_asset": "cashbrick_packed_albedo.png",
+  "albedo_modified_region": "UV lower-right quadrant only",
+  "band_purple_srgb": [
+    105,
+    65,
+    160
+  ],
+  "band_white_srgb": [
+    255,
+    255,
+    255
+  ],
+  "band_label": "$1000",
+  "whole_height_band_count": 1,
+  "band_center_x_m": 0,
+  "band_width_m": 0.041,
+  "native_band_note_length_ratio": 0.257,
+  "band_side_height_m": 0.045325,
+  "paper_body_count": 1,
+  "paper_body_air_gap_m": 0,
   "paper_line_pitch_m": 0.0014208984375,
+  "native_face_contract": {
+    "texture_name": "BankNoteModelTex",
+    "texture_path_id": 1760,
+    "reduced_texture_name": "BankNoteModelTex reducedres",
+    "reduced_texture_path_id": 1669,
+    "material_name": "banknote mat",
+    "material_path_id": 221,
+    "source_uv_min": [
+      0.010205254,
+      0.576686919
+    ],
+    "source_uv_max": [
+      0.991570175,
+      0.991879761
+    ],
+    "target_uv_min": [
+      0.01,
+      0.51
+    ],
+    "target_uv_max": [
+      0.99,
+      0.99
+    ],
+    "target_pixel_region": [
+      0,
+      512,
+      1024,
+      512
+    ],
+    "sampling": "bilinear; clamp normalized target UV to [0,1]",
+    "native_pixels_in_repository": false,
+    "authored_face_is_fallback": true
+  },
   "retained_top_sheet_count": 3,
   "top_sheet_thickness_m": 0.0003,
   "body_corner_bevel_m": 0.00012,
-  "retained_approved_vertices": 264,
-  "retained_approved_triangles": 484,
+  "retained_approved_vertices": 72,
+  "retained_approved_triangles": 132,
   "bounds_min_m": [
     -0.07999999821186066,
-    -1.862645149230957e-09,
+    0.0,
     -0.03814999759197235
   ],
   "bounds_max_m": [
     0.07999999821186066,
-    0.04532500356435776,
+    0.04532499983906746,
     0.03814999759197235
   ],
   "dimensions_m": [
     0.1599999964237213,
-    0.04532500542700291,
+    0.04532499983906746,
     0.0762999951839447
   ],
   "uv_in_unit_square": true,

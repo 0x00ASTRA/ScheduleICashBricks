@@ -12,3 +12,5 @@ __pycache__/
 *.blend1
 CashBrickPOV.png/
 CashStackPOV.png/
+cash-brick-clipping/
+cash-texture-errors/

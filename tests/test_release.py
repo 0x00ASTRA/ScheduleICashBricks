@@ -37,9 +37,9 @@ class ReleaseValidationTests(unittest.TestCase):
         files = {"README.md": b"install instructions", "Mods/CashBricks.dll": b"test mod binary",
                  "CHANGELOG.md": (self.root / "CHANGELOG.md").read_bytes(),
                  "docs/installation.md": (self.root / "docs/installation.md").read_bytes()}
-        for name in ("cashbrick_wrapped_preview.png", "cashstack_preview.png"):
-            files[f"assets/blender/{name}"] = name.encode()
-        for name in ("cashbrick.obj", "cashbrick_packed.obj", "cashbrick_albedo.png", "cashbrick_icon.png",
+        for name in ("cash-brick.png", "pouring-stack.png"):
+            files[f"docs/images/{name}"] = name.encode()
+        for name in ("cashbrick.obj", "cashbrick_packed.obj", "cashbrick_albedo.png", "cashbrick_packed_albedo.png", "cashbrick_icon.png",
                      "cashbrick_wrap.obj", "cashbrick_wrap_albedo.png", "cashbrick_wrapped_icon.png"):
             files[f"UserData/CashBricks/{name}"] = name.encode()
         if extra:

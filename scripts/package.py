@@ -70,9 +70,9 @@ def main() -> None:
     }
     for guide in sorted((ROOT / "docs").glob("*.md")):
         files[guide.relative_to(ROOT).as_posix()] = guide
-    for preview in ("cashbrick_wrapped_preview.png", "cashstack_preview.png"):
-        files[f"assets/blender/{preview}"] = ROOT / "assets/blender" / preview
-    for asset in ("cashbrick.obj", "cashbrick_packed.obj", "cashbrick_albedo.png", "cashbrick_icon.png",
+    for preview in ("cash-brick.png", "pouring-stack.png"):
+        files[f"docs/images/{preview}"] = ROOT / "docs/images" / preview
+    for asset in ("cashbrick.obj", "cashbrick_packed.obj", "cashbrick_albedo.png", "cashbrick_packed_albedo.png", "cashbrick_icon.png",
                   "cashbrick_wrap.obj", "cashbrick_wrap_albedo.png", "cashbrick_wrapped_icon.png"):
         files[f"UserData/CashBricks/{asset}"] = ROOT / "assets" / asset
     payload = {name: path.read_bytes() for name, path in sorted(files.items())}

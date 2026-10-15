@@ -8,7 +8,7 @@ namespace CashBricks;
 
 internal static class RuntimeChecks
 {
-    internal static void Run()
+    internal static void Run(Product_Equippable heldTemplate)
     {
         int passed = 0;
         void Check(bool ok, string name)
@@ -279,6 +279,11 @@ internal static class RuntimeChecks
         Check(Main.BrickDefinition!.Equippable.CanInteractWhenEquipped && Main.BrickDefinition.Equippable.CanPickUpWhenEquipped,
             "The held cash brick allows normal interaction and pickup");
         var heldPrefab = Main.BrickDefinition.Equippable.gameObject;
+        var cashViewmodel = Main.BrickDefinition.Equippable.TryCast<Il2CppScheduleOne.Equipping.Equippable_Viewmodel>()!;
+        Check(Vector3.Distance(cashViewmodel.localPosition, heldTemplate.localPosition) < .000001f &&
+            Quaternion.Angle(Quaternion.Euler(cashViewmodel.localEulerAngles), Quaternion.Euler(heldTemplate.localEulerAngles)) < .001f &&
+            Vector3.Distance(cashViewmodel.localScale, heldTemplate.localScale) < .000001f,
+            "The cash brick copies the native product brick's held pose and scale");
         Check(heldPrefab.activeSelf && !heldPrefab.activeInHierarchy,
             "The held template stays hidden while preserving an active clone root");
         var heldProbe = new GameObject("CashBrick_HeldCloneSelftest");
@@ -295,6 +300,58 @@ internal static class RuntimeChecks
                 renderer.enabled && renderer.sharedMaterial != null &&
                 renderer.GetComponent<MeshFilter>()?.sharedMesh != null),
                 "The cloned held brick retains both the cash and plastic-wrap meshes and materials");
+            var runtimeAtlas = heldRenderers.Single(renderer => renderer.GetComponent<MeshFilter>().sharedMesh.name == "cashbrick_packed")
+                .sharedMaterial.mainTexture.TryCast<Texture2D>()!;
+            var authoredAtlas = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            try
+            {
+                var bytes = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<byte>(
+                    File.ReadAllBytes(Path.Combine(Visuals.AssetDirectory, "cashbrick_packed_albedo.png")));
+                if (!ImageConversion.LoadImage(authoredAtlas, bytes, false)) throw new InvalidDataException("Cannot decode authored cash atlas.");
+                var original = authoredAtlas.GetPixels32();
+                var composited = runtimeAtlas.GetPixels32();
+                bool preserved = original.Length == composited.Length, replaced = false;
+                for (int i = 0; i < original.Length && preserved; i++)
+                {
+                    var a = original[i]; var b = composited[i];
+                    bool same = a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
+                    if (i < 1024 * 512) preserved &= same;
+                    else replaced |= !same;
+                }
+                Check(preserved && replaced,
+                    "Native bill faces replace the authored face pixels while preserving every paper-edge and purple-band pixel");
+            }
+            finally { UnityEngine.Object.Destroy(authoredAtlas); }
+            Check(Visuals.UsableIcon(Main.BrickDefinition.Icon.texture),
+                "The cash brick inventory icon has a visible model and transparent background");
+            Check(heldClone.GetComponentsInChildren<Transform>(true).All(child => child.gameObject.layer == LayerMask.NameToLayer("Viewmodel")) &&
+                heldRenderers.All(renderer => renderer.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.Off),
+                "Held cash and plastic use the native viewmodel layer without casting shadows on the world");
+            // Evaluate actual imported mesh corners at the equipped pose without
+            // equipping an item, activating a camera, or changing player state.
+            heldClone.transform.localPosition = cashViewmodel.localPosition;
+            heldClone.transform.localRotation = Quaternion.Euler(cashViewmodel.localEulerAngles);
+            heldClone.transform.localScale = cashViewmodel.localScale;
+            var nativeWrap = Visuals.NativeBrickWrapper(heldTemplate);
+            var nativeMatrix = Matrix4x4.TRS(heldTemplate.localPosition, Quaternion.Euler(heldTemplate.localEulerAngles), heldTemplate.localScale) *
+                heldTemplate.transform.worldToLocalMatrix * nativeWrap.transform.localToWorldMatrix;
+            var cashWrap = heldRenderers.Single(renderer => renderer.GetComponent<MeshFilter>().sharedMesh.name == "cashbrick_wrap");
+            var cashMatrix = heldProbe.transform.worldToLocalMatrix * cashWrap.transform.localToWorldMatrix;
+            var nativeBounds = nativeWrap.sharedMesh.bounds;
+            var cashBounds = cashWrap.GetComponent<MeshFilter>().sharedMesh.bounds;
+            Check(Vector3.Distance(cashMatrix.MultiplyPoint3x4(cashBounds.center), nativeMatrix.MultiplyPoint3x4(nativeBounds.center)) < .00001f,
+                "The held cash brick is centered on the native brick's grip instead of drifting left");
+            float nativeForward = float.NegativeInfinity, cashForward = float.NegativeInfinity;
+            for (int x = -1; x <= 1; x += 2)
+            for (int y = -1; y <= 1; y += 2)
+            for (int z = -1; z <= 1; z += 2)
+            {
+                var corner = new Vector3(x, y, z);
+                nativeForward = Mathf.Max(nativeForward, nativeMatrix.MultiplyPoint3x4(nativeBounds.center + Vector3.Scale(nativeBounds.extents, corner)).z);
+                cashForward = Mathf.Max(cashForward, cashMatrix.MultiplyPoint3x4(cashBounds.center + Vector3.Scale(cashBounds.extents, corner)).z);
+            }
+            Check(cashForward <= nativeForward + .005f,
+                "Held cash stays within the native brick's forward reach instead of extending into nearby walls");
             foreach (var renderer in heldRenderers)
             {
                 var heldMesh = renderer.GetComponent<MeshFilter>().sharedMesh;
@@ -326,6 +383,39 @@ internal static class RuntimeChecks
         var adapter = CashPressTasks.CreatePhysicsAdapter();
         Check(adapter.Quantity == CashPressFlow.StackCount && adapter.Definition.TryCast<ProductDefinition>()?.FunctionalProduct != null,
             "The native pouring adapter has twenty units and a physical product prefab");
+        var pouringProbe = new GameObject("CashBrick_NativePouringSelftest");
+        pouringProbe.SetActive(false);
+        try
+        {
+            var clone = Visuals.ClonePouringCash(pouringProbe.transform);
+            var filter = clone.GetComponentsInChildren<MeshFilter>(true).Single();
+            var renderer = filter.GetComponent<MeshRenderer>();
+            var source = Visuals.NativePouringSource();
+            var originalMaterials = source.GetComponent<MeshRenderer>().sharedMaterials;
+            Check(filter.sharedMesh.Pointer == source.sharedMesh.Pointer &&
+                renderer.sharedMaterials.Select(value => value.Pointer).SequenceEqual(originalMaterials.Select(value => value.Pointer)),
+                "Pouring cash uses the base game's exact stack mesh, UVs, and original paper, bill-face and band materials");
+            var collider = clone.GetComponentsInChildren<BoxCollider>(true).Single();
+            Check(Vector3.Distance(collider.center, Vector3.zero) < .000001f &&
+                Vector3.Distance(collider.size, new Vector3(.088f, .009065f, .041965f)) < .000001f &&
+                collider.enabled && clone.GetComponentsInChildren<Transform>(true).All(child => child.gameObject.layer == LayerMask.NameToLayer("Task")),
+                "Native cash stacks preserve the existing press collision footprint and Task-layer drag detection");
+            var meshBounds = filter.sharedMesh.bounds;
+            var transform = clone.transform.worldToLocalMatrix * filter.transform.localToWorldMatrix;
+            bool inside = true;
+            for (int x = -1; x <= 1; x += 2)
+            for (int y = -1; y <= 1; y += 2)
+            for (int z = -1; z <= 1; z += 2)
+            {
+                var point = transform.MultiplyPoint3x4(meshBounds.center + Vector3.Scale(meshBounds.extents, new Vector3(x, y, z)));
+                var delta = point - collider.center;
+                var half = collider.size * .5f + Vector3.one * .000001f;
+                inside &= Mathf.Abs(delta.x) <= half.x && Mathf.Abs(delta.y) <= half.y && Mathf.Abs(delta.z) <= half.z;
+            }
+            Check(inside && clone.GetComponentsInChildren<Rigidbody>(true).Length == 0 && clone.GetComponentsInChildren<MonoBehaviour>(true).Length == 0,
+                "The native stack visual fits its collider without adding rigidbodies or cash-inventory behaviours to the press task");
+        }
+        finally { UnityEngine.Object.Destroy(pouringProbe); }
         var item = Main.BrickDefinition.GetDefaultInstance(3);
         var copy = CashSnapshots.Copy(item)!;
         Check(Main.IsBrick(copy) && copy.Quantity == 3 && copy.StackLimit == Main.BrickDefinition.StackLimit,
