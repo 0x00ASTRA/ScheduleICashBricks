@@ -26,12 +26,17 @@ class ReleaseValidationTests(unittest.TestCase):
         (self.root / "src").mkdir()
         (self.root / "releases").mkdir()
         (self.root / "dist").mkdir()
+        (self.root / "docs").mkdir()
+        (self.root / "docs/installation.md").write_text("Test installation guide.\n")
+        (self.root / "CHANGELOG.md").write_text("Test changelog.\n")
         (self.root / "CashBricks.csproj").write_text("<Project><PropertyGroup><Version>1.2.3</Version></PropertyGroup></Project>")
         (self.root / "src/Main.cs").write_text('[assembly: MelonInfo(typeof(CashBricks.Main), "Cash Bricks", "1.2.3", "Astra")]')
         (self.root / "releases/v1.2.3.md").write_text("Test release notes.\n")
 
     def package(self, extra=False, corrupt=False):
-        files = {"README.md": b"install instructions", "Mods/CashBricks.dll": b"test mod binary"}
+        files = {"README.md": b"install instructions", "Mods/CashBricks.dll": b"test mod binary",
+                 "CHANGELOG.md": (self.root / "CHANGELOG.md").read_bytes(),
+                 "docs/installation.md": (self.root / "docs/installation.md").read_bytes()}
         for name in ("cashbrick.obj", "cashbrick_packed.obj", "cashbrick_albedo.png", "cashbrick_icon.png",
                      "cashbrick_wrap.obj", "cashbrick_wrap_albedo.png", "cashbrick_wrapped_icon.png"):
             files[f"UserData/CashBricks/{name}"] = name.encode()

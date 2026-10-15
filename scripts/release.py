@@ -92,7 +92,8 @@ def verify_package(archive: Path) -> None:
             if name in files or not re.fullmatch(r"[a-f0-9]{64}", digest):
                 raise ValueError("Invalid package checksum manifest.")
             files[name] = digest
-        expected = {"Mods/CashBricks.dll", "README.md"}
+        expected = {"Mods/CashBricks.dll", "README.md", "CHANGELOG.md"}
+        expected.update(guide.relative_to(ROOT).as_posix() for guide in (ROOT / "docs").glob("*.md"))
         expected.update(f"UserData/CashBricks/{name}" for name in (
             "cashbrick.obj", "cashbrick_packed.obj", "cashbrick_albedo.png", "cashbrick_icon.png",
             "cashbrick_wrap.obj", "cashbrick_wrap_albedo.png", "cashbrick_wrapped_icon.png"))

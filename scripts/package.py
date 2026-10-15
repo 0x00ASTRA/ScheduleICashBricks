@@ -66,7 +66,10 @@ def main() -> None:
     files = {
         "Mods/CashBricks.dll": ROOT / "bin/Release/net6.0/CashBricks.dll",
         "README.md": ROOT / "README.md",
+        "CHANGELOG.md": ROOT / "CHANGELOG.md",
     }
+    for guide in sorted((ROOT / "docs").glob("*.md")):
+        files[guide.relative_to(ROOT).as_posix()] = guide
     for asset in ("cashbrick.obj", "cashbrick_packed.obj", "cashbrick_albedo.png", "cashbrick_icon.png",
                   "cashbrick_wrap.obj", "cashbrick_wrap_albedo.png", "cashbrick_wrapped_icon.png"):
         files[f"UserData/CashBricks/{asset}"] = ROOT / "assets" / asset
